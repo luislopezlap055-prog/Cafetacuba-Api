@@ -1,26 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoriaDto } from './dto/create-categoria.dto';
 import { UpdateCategoriaDto } from './dto/update-categoria.dto';
-
+import { Categoria } from './entities/categoria.entity';
 @Injectable()
 export class CategoriasService {
+  private categorias: Categoria[] = [];
+  private siguienteId = 1;
   create(createCategoriaDto: CreateCategoriaDto) {
-    return 'This action adds a new categoria';
+    const categoria = {
+      id: this.siguienteId++,
+      ...createCategoriaDto,
+    };
+    this.categorias.push(categoria);
+    return categoria;
   }
-
   findAll() {
-    return `This action returns all categorias`;
+    return this.categorias;
   }
-
   findOne(id: number) {
-    return `This action returns a #${id} categoria`;
+    const categoria = this.categorias.find(c => c.id === id);
+    if (!categoria) {
+      throw new NotFoundException('Categoria no encontrada');
+    }
+    return categoria;
   }
-
   update(id: number, updateCategoriaDto: UpdateCategoriaDto) {
-    return `This action updates a #${id} categoria`;
+    const categoria = this.findOne(id);
+    Object.assign(categoria, updateCategoriaDto);
+    return categoria;
   }
-
   remove(id: number) {
-    return `This action removes a #${id} categoria`;
+    this.findOne(id);
+    this.categorias = this.categorias.filter(c => c.id !== id);
+    return { mensaje: 'Categoria eliminada correctamente' };
   }
 }
